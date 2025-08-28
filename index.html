@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipfare - AI-Driven Fuel Pricing Optimization</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- Header Component -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="app-title">Zipfare</h1>
+                    <div class="version-badge">v2.0.0</div>
+                    <div class="connection-status">
+                        <div class="status-indicator" id="mongoStatus"></div>
+                        <span id="connectionText">Connecting...</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="live-updates">
+                        <div class="live-indicator"></div>
+                        <span>Live Data Stream</span>
+                    </div>
+                    <div class="ai-status-header">
+                        <span class="status--success">AI Models Active</span>
+                    </div>
+                    <div class="timestamp" id="lastUpdate">Initializing...</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Component -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <button class="nav-button active" data-route="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Real-Time Dashboard</span>
+                </button>
+                <button class="nav-button" data-route="pricing">
+                    <span class="nav-icon">🗺️</span>
+                    <span class="nav-text">City Pricing Command</span>
+                </button>
+                <button class="nav-button" data-route="analytics">
+                    <span class="nav-icon">🤖</span>
+                    <span class="nav-text">AI Analytics & Modeling</span>
+                </button>
+                <button class="nav-button" data-route="operations">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Operations Center</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content Container -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page-section active">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Real-Time Control Dashboard</h2>
+                        <p class="page-subtitle">Live monitoring and AI predictions across all stations</p>
+                    </div>
+                    <div class="dashboard-actions">
+                        <button class="btn btn--secondary btn--sm">Export Data</button>
+                        <button class="btn btn--primary btn--sm">Configure Alerts</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Live Price Ticker -->
+                    <div class="card ticker-card">
+                        <div class="card__header">
+                            <h3>Live Fuel Prices</h3>
+                            <div class="live-indicator small"></div>
+                            <div class="model-accuracy">91.2% | 94.1%</div>
+                        </div>
+                        <div class="card__body">
+                            <div class="price-ticker" id="priceTicker">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Prediction Center -->
+                    <div class="card prediction-card">
+                        <div class="card__header">
+                            <h3>AI Prediction Center</h3>
+                            <select class="form-control city-selector" id="predictionCity">
+                                <option value="">Select City...</option>
+                            </select>
+                        </div>
+                        <div class="card__body">
+                            <div class="prediction-display" id="predictionDisplay">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Economic Indicators -->
+                    <div class="card economic-card">
+                        <div class="card__header">
+                            <h3>Economic Indicators</h3>
+                            <span class="last-updated" id="economicLastUpdate">Loading...</span>
+                        </div>
+                        <div class="card__body">
+                            <div class="economic-grid" id="economicIndicators">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System KPIs -->
+                    <div class="card kpi-card">
+                        <div class="card__header">
+                            <h3>System KPIs</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="kpi-grid" id="kpiGrid">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Alerts -->
+                    <div class="card alerts-card">
+                        <div class="card__header">
+                            <h3>Live Market Alerts</h3>
+                            <span class="alert-count" id="alertCount">0</span>
+                        </div>
+                        <div class="card__body">
+                            <div class="alerts-list" id="alertsList">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Chart -->
+                    <div class="card chart-card large">
+                        <div class="card__header">
+                            <h3>Price Trends Analysis</h3>
+                            <div class="chart-controls">
+                                <button class="btn btn--sm chart-toggle active" data-period="7d">7D</button>
+                                <button class="btn btn--sm chart-toggle" data-period="30d">30D</button>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="trendsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- City Pricing Page -->
+            <section id="pricing" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>City-Level Pricing Command</h2>
+                        <p class="page-subtitle">Dynamic pricing control across all locations</p>
+                    </div>
+                    <div class="pricing-actions">
+                        <button class="btn btn--secondary">Bulk Update</button>
+                        <button class="btn btn--primary">Apply AI Recommendations</button>
+                    </div>
+                </div>
+
+                <div class="pricing-grid">
+                    <!-- Interactive City Map -->
+                    <div class="card map-card large">
+                        <div class="card__header">
+                            <h3>Interactive City Map</h3>
+                            <div class="map-controls">
+                                <button class="btn btn--sm map-overlay active" data-overlay="prices">Prices</button>
+                                <button class="btn btn--sm map-overlay" data-overlay="weather">Weather</button>
+                                <button class="btn btn--sm map-overlay" data-overlay="traffic">Traffic</button>
+                                <button class="btn btn--sm map-overlay" data-overlay="confidence">AI Confidence</button>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="city-map" id="cityMap">
+                                <div class="loading-skeleton map-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Pricing Controls -->
+                    <div class="card pricing-controls-card">
+                        <div class="card__header">
+                            <h3>Dynamic Pricing Controls</h3>
+                            <div class="pricing-mode">
+                                <label class="form-label">
+                                    <input type="checkbox" id="aiMode"> AI Auto-Pricing
+                                </label>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="pricing-controls" id="pricingControls">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demand Forecasting -->
+                    <div class="card forecast-card large">
+                        <div class="card__header">
+                            <h3>7-Day Demand Forecast</h3>
+                            <select class="form-control" id="forecastCity">
+                                <option value="all">All Cities Average</option>
+                            </select>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container" style="position: relative; height: 280px;">
+                                <canvas id="demandChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weather & Traffic Impact -->
+                    <div class="card impact-card">
+                        <div class="card__header">
+                            <h3>Environmental Impact</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="impact-grid" id="impactGrid">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Page -->
+            <section id="analytics" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>AI Analytics & Model Performance</h2>
+                        <p class="page-subtitle">Advanced analytics and machine learning insights</p>
+                    </div>
+                    <div class="analytics-actions">
+                        <button class="btn btn--secondary">Retrain Models</button>
+                        <button class="btn btn--primary">Generate Report</button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <!-- Model Performance -->
+                    <div class="card model-performance-card">
+                        <div class="card__header">
+                            <h3>Model Performance Monitoring</h3>
+                            <div class="model-status-indicators">
+                                <span class="status--success">Petrol: 91.2%</span>
+                                <span class="status--success">Diesel: 94.1%</span>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="model-metrics" id="modelMetrics">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature Importance -->
+                    <div class="card feature-card">
+                        <div class="card__header">
+                            <h3>Feature Importance Analysis</h3>
+                            <button class="btn btn--sm" id="refreshFeatures">Refresh</button>
+                        </div>
+                        <div class="card__body">
+                            <div class="chart-container" style="position: relative; height: 280px;">
+                                <canvas id="featureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Regional Performance -->
+                    <div class="card regional-card large">
+                        <div class="card__header">
+                            <h3>Regional Performance Analysis</h3>
+                            <div class="regional-filters">
+                                <select class="form-control" id="regionalMetric">
+                                    <option value="revenue">Revenue</option>
+                                    <option value="margin">Margin</option>
+                                    <option value="volume">Volume</option>
+                                    <option value="satisfaction">Satisfaction</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="regional-grid" id="regionalPerformance">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictive Scenarios */
+                    <div class="card scenarios-card large">
+                        <div class="card__header">
+                            <h3>Predictive Scenario Modeling</h3>
+                            <select class="form-control" id="scenarioSelector">
+                                <option value="current">Current Trend</option>
+                                <option value="oil_spike">Oil Price Spike (+20%)</option>
+                                <option value="economic_downturn">Economic Downturn</option>
+                                <option value="monsoon">Monsoon Impact</option>
+                                <option value="festival_season">Festival Season</option>
+                            </select>
+                        </div>
+                        <div class="card__body">
+                            <div class="scenario-results" id="scenarioResults">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historical Analysis -->
+                    <div class="card historical-card">
+                        <div class="card__header">
+                            <h3>Historical Accuracy</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="historical-metrics" id="historicalMetrics">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Operations Page -->
+            <section id="operations" class="page-section">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Operations & System Monitoring</h2>
+                        <p class="page-subtitle">System health, inventory, and financial analytics</p>
+                    </div>
+                    <div class="operations-actions">
+                        <button class="btn btn--secondary">System Diagnostics</button>
+                        <button class="btn btn--primary">Emergency Protocols</button>
+                    </div>
+                </div>
+
+                <div class="operations-grid">
+                    <!-- System Health Dashboard -->
+                    <div class="card system-health-card">
+                        <div class="card__header">
+                            <h3>System Health Dashboard</h3>
+                            <div class="system-uptime">Uptime: <span id="systemUptime">99.97%</span></div>
+                        </div>
+                        <div class="card__body">
+                            <div class="health-indicators" id="systemHealth">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Management -->
+                    <div class="card inventory-card">
+                        <div class="card__header">
+                            <h3>Inventory & Supply Status</h3>
+                            <button class="btn btn--sm" id="refreshInventory">Refresh</button>
+                        </div>
+                        <div class="card__body">
+                            <div class="inventory-grid" id="inventoryStatus">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Analytics -->
+                    <div class="card financial-card large">
+                        <div class="card__header">
+                            <h3>Financial Analytics</h3>
+                            <div class="financial-period">
+                                <button class="btn btn--sm period-toggle active" data-period="today">Today</button>
+                                <button class="btn btn--sm period-toggle" data-period="week">Week</button>
+                                <button class="btn btn--sm period-toggle" data-period="month">Month</button>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="financial-metrics" id="financialMetrics">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert & Notification Center -->
+                    <div class="card alert-center-card large">
+                        <div class="card__header">
+                            <h3>Alert & Notification Center</h3>
+                            <div class="alert-filters">
+                                <button class="btn btn--sm alert-filter active" data-type="all">All</button>
+                                <button class="btn btn--sm alert-filter" data-type="critical">Critical</button>
+                                <button class="btn btn--sm alert-filter" data-type="warning">Warning</button>
+                            </div>
+                        </div>
+                        <div class="card__body">
+                            <div class="alert-center" id="alertCenter">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance ROI -->
+                    <div class="card roi-card">
+                        <div class="card__header">
+                            <h3>ROI Calculator</h3>
+                        </div>
+                        <div class="card__body">
+                            <div class="roi-metrics" id="roiMetrics">
+                                <div class="loading-skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- WebSocket Status Indicator -->
+        <div class="websocket-status" id="websocketStatus">
+            <div class="ws-indicator"></div>
+            <span>WebSocket: <span id="wsStatusText">Connecting...</span></span>
+        </div>
+
+        <!-- Notification Toast Container -->
+        <div class="toast-container" id="toastContainer"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Initializing Zipfare</h3>
+            <p id="loadingText">Connecting to MongoDB cluster...</p>
+            <div class="loading-progress">
+                <div class="progress-bar" id="loadingProgress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
