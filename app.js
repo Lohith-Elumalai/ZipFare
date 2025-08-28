@@ -5,18 +5,18 @@ const appData = {
   "users": [
     {
       "id": "admin-001",
-      "username": "admin@fuelco.com",
+      "username": "admin@zipfare.com",
       "role": "admin",
-      "name": "Rajesh Kumar",
+      "name": "Admin",
       "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
       "permissions": ["all"],
       "lastLogin": "2025-08-28T15:30:00Z"
     },
     {
       "id": "manager-001", 
-      "username": "manager@station1.com",
+      "username": "manager@zipfare.com",
       "role": "station_manager",
-      "name": "Priya Sharma",
+      "name": "Manager",
       "avatar": "https://images.unsplash.com/photo-1494790108755-2616b612b547?w=150",
       "stationId": "station-001",
       "permissions": ["station_management"],
@@ -46,7 +46,7 @@ let isDarkMode = false;
       
       // Test toast system
       setTimeout(() => {
-        createToast('Welcome to FuelCo Platform! Use demo accounts to login.', 'info');
+        createToast('Welcome to ZipFare Platform! Use demo accounts to login.', 'info');
       }, 1000);
       
       console.log('FuelCo Platform initialized successfully');
